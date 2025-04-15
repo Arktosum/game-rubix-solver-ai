@@ -1,0 +1,65 @@
+*{
+  margin:0px;
+  padding : 0px;
+}
+
+#root{
+  background-color:  black;
+  width : 100%;
+  min-height : 100vh;
+  display: grid;
+  place-content: center;
+}
+
+
+
+#face{
+  width:210px;
+  height:210px;
+  background-color: red;
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  
+}
+.cell{
+  background-color: green;
+  border : 1px solid black;
+  width : 70px;
+  height : 70px;
+}
+
+
+.white{
+  background-color: white;
+}
+
+
+.yellow{
+  background-color: yellow;
+}
+
+.red{
+  background-color: red;
+}
+
+.orange{
+  background-color: orange;
+}
+.blue{
+  background-color: blue;
+}
+.green{
+  background-color: green;
+}
+
+#row-1{
+  display: flex;
+  margin-left : 210px;
+}
+#row-2{
+  display: flex;
+}
+#row-3{
+  display: flex;
+  margin-left : 210px;
+}
