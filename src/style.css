@@ -26,6 +26,9 @@
   border : 1px solid black;
   width : 70px;
   height : 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 

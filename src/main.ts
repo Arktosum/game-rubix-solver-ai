@@ -16,7 +16,12 @@ enum Color {
     BLUE,
 }
 
-
+enum Direction {
+    TOP,
+    BOTTOM,
+    LEFT,
+    RIGHT
+}
 const color_to_text = {
     [Color.WHITE]: 'white',
     [Color.RED]: 'red',
@@ -66,22 +71,49 @@ function swap(face, i, j) {
     face[j] = face[i];
     face[i] = temp;
 }
-function swap3(face1, face2) {
-    let temp = [face2[0], face2[1], face2[2]];
-    face2[0], face2[1], face2[2] = face1[0], face1[1], face1[2]
-    face1[0], face1[1], face1[2] = temp;
+
+
+enum Orientation {
+    TOP,
+    BOTTOM,
+    LEFT,
+    RIGHT
 }
 
-const OPP_FACE_MAP = {
-    [Color.WHITE]: [Color.ORANGE, Color.BLUE, Color.RED, Color.GREEN],
-    [Color.RED]: [Color.WHITE, Color.BLUE, Color.YELLOW, Color.GREEN],
-    [Color.BLUE]: [Color.WHITE, Color.ORANGE, Color.YELLOW, Color.RED],
-    [Color.ORANGE]: [Color.WHITE, Color.GREEN, Color.YELLOW, Color.BLUE],
-    [Color.GREEN]: [Color.WHITE, Color.RED, Color.YELLOW, Color.ORANGE],
-    [Color.YELLOW]: [Color.RED, Color.BLUE, Color.ORANGE, Color.GREEN]
+let ORIENTATION_MAP = {
+    [Orientation.TOP]: [0, 1, 2],
+    [Orientation.BOTTOM]: [6, 7, 8],
+    [Orientation.LEFT]: [0, 3, 6],
+    [Orientation.RIGHT]: [2, 5, 8],
 }
-function rotateFace(face_index, clockwise = true) {
-    let face = CUBE[face_index];
+function swap3(from: [Color, Orientation], to: [Color, Orientation]) {
+    let [from_color, from_orientation] = from;
+    let [to_color, to_orientation] = to;
+    let from_face = CUBE[from_color];
+    let to_face = CUBE[to_color];
+
+    let from_indices = ORIENTATION_MAP[from_orientation];
+    let to_indices = ORIENTATION_MAP[to_orientation];
+    let temp = [to_face[to_indices[0]], to_face[to_indices[1]], to_face[to_indices[2]]];
+    for (let i = 0; i < 3; i++) {
+        to_face[to_indices[i]] = from_face[from_indices[i]];
+        from_face[from_indices[i]] = temp[i];
+    }
+}
+
+
+
+const ADJ_FACE_MAP: Record<Color, [Color, Orientation][]> = {
+    [Color.WHITE]: [[Color.ORANGE, Orientation.TOP], [Color.BLUE, Orientation.TOP], [Color.RED, Orientation.TOP], [Color.GREEN, Orientation.TOP]],
+    [Color.RED]: [[Color.WHITE, Orientation.BOTTOM], [Color.BLUE, Orientation.LEFT], [Color.YELLOW, Orientation.TOP], [Color.GREEN, Orientation.RIGHT]],
+    [Color.BLUE]: [[Color.WHITE, Orientation.RIGHT], [Color.ORANGE, Orientation.LEFT], [Color.YELLOW, Orientation.RIGHT], [Color.RED, Orientation.RIGHT]],
+    [Color.ORANGE]: [[Color.WHITE, Orientation.TOP], [Color.GREEN, Orientation.LEFT], [Color.YELLOW, Orientation.BOTTOM], [Color.BLUE, Orientation.RIGHT]],
+    [Color.GREEN]: [[Color.WHITE, Orientation.LEFT], [Color.RED, Orientation.LEFT], [Color.YELLOW, Orientation.LEFT], [Color.ORANGE, Orientation.RIGHT]],
+    [Color.YELLOW]: [[Color.RED, Orientation.BOTTOM], [Color.BLUE, Orientation.BOTTOM], [Color.ORANGE, Orientation.BOTTOM], [Color.GREEN, Orientation.BOTTOM]]
+}
+
+function rotateFace(face_color: Color, clockwise: boolean) {
+    let face = CUBE[face_color];
     // Rotate face!
     let order = [1, 2, 5, 8, 7, 6, 3];
     if (!clockwise) order.reverse()
@@ -90,32 +122,46 @@ function rotateFace(face_index, clockwise = true) {
             swap(face, 0, ord);
         }
     }
-    let faces: number[] = OPP_FACE_MAP[face_index];
-
-    let orange = CUBE[faces[0]]
-    let blue = CUBE[faces[1]]
-    let orange_three = [orange[0],orange[1],orange[2]];
-    let blue_three = [blue[0],blue[1],blue[2]];
-    console.log(orange_three.map((item)=>color_to_text[item]))
-    console.log(blue_three.map((item)=>color_to_text[item]))
-
-    blue[0],blue[1],blue[2] = orange[0],orange[1],orange[2]
     // Rotate sides 
+
+    let adj_faces = ADJ_FACE_MAP[face_color];
+    swap3(adj_faces[0], adj_faces[1]);
+    swap3(adj_faces[0], adj_faces[2]);
+    swap3(adj_faces[0], adj_faces[3]);
+
 }
 
+rotateFace(Color.WHITE, true);
+let face_color = Color.BLUE;
+{
+    let face = CUBE[face_color];
+    // Rotate face!
+    let order = [1, 2, 5, 8, 7, 6, 3];
+    for (let i = 0; i < 2; i++) {
+        for (let ord of order) {
+            swap(face, 0, ord);
+        }
+    }
+    // Rotate sides 
 
-rotateFace(Color.WHITE, true)
+    let adj_faces = ADJ_FACE_MAP[face_color];
+    swap3(adj_faces[0], adj_faces[1]);
+    // swap3(adj_faces[0], adj_faces[2]);
+    // swap3(adj_faces[0], adj_faces[3]);
+}
 
 let face = document.createElement('div');
 face.id = 'face'
 for (let j = 0; j < 9; j++) {
     let cell = document.createElement('div');
     cell.classList.add('cell')
+    if (j == 4) {
+        cell.innerText = '^'
+    }
     cell.classList.add(color_to_text[CUBE[0][j]]);
     face.appendChild(cell)
 }
 row1.appendChild(face)
-
 
 for (let i = 1; i <= 4; i++) {
     let face = document.createElement('div');
@@ -123,6 +169,9 @@ for (let i = 1; i <= 4; i++) {
     for (let j = 0; j < 9; j++) {
         let cell = document.createElement('div');
         cell.classList.add('cell')
+        if (j == 4) {
+            cell.innerText = '^'
+        }
         cell.classList.add(color_to_text[CUBE[i][j]]);
         face.appendChild(cell)
     }
@@ -135,6 +184,9 @@ face.id = 'face'
 for (let j = 0; j < 9; j++) {
     let cell = document.createElement('div');
     cell.classList.add('cell')
+    if (j == 4) {
+        cell.innerText = '^'
+    }
     cell.classList.add(color_to_text[CUBE[5][j]]);
     face.appendChild(cell)
 }
