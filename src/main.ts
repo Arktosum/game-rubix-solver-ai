@@ -81,10 +81,10 @@ enum Orientation {
 }
 
 let ORIENTATION_MAP = {
-    [Orientation.TOP]: [0, 1, 2],
+    [Orientation.TOP]: [2, 1, 0],
     [Orientation.BOTTOM]: [6, 7, 8],
     [Orientation.LEFT]: [0, 3, 6],
-    [Orientation.RIGHT]: [2, 5, 8],
+    [Orientation.RIGHT]: [8, 5, 2],
 }
 function swap3(from: [Color, Orientation], to: [Color, Orientation]) {
     let [from_color, from_orientation] = from;
@@ -125,30 +125,20 @@ function rotateFace(face_color: Color, clockwise: boolean) {
     // Rotate sides 
 
     let adj_faces = ADJ_FACE_MAP[face_color];
-    swap3(adj_faces[0], adj_faces[1]);
-    swap3(adj_faces[0], adj_faces[2]);
-    swap3(adj_faces[0], adj_faces[3]);
+
+    order = [1, 2, 3];
+    if (!clockwise) order.reverse()
+    swap3(adj_faces[0], adj_faces[order[0]]);
+    swap3(adj_faces[0], adj_faces[order[1]]);
+    swap3(adj_faces[0], adj_faces[order[2]]);
 
 }
 
-rotateFace(Color.WHITE, true);
-let face_color = Color.BLUE;
-{
-    let face = CUBE[face_color];
-    // Rotate face!
-    let order = [1, 2, 5, 8, 7, 6, 3];
-    for (let i = 0; i < 2; i++) {
-        for (let ord of order) {
-            swap(face, 0, ord);
-        }
-    }
-    // Rotate sides 
 
-    let adj_faces = ADJ_FACE_MAP[face_color];
-    swap3(adj_faces[0], adj_faces[1]);
-    // swap3(adj_faces[0], adj_faces[2]);
-    // swap3(adj_faces[0], adj_faces[3]);
-}
+rotateFace(Color.RED,true);
+rotateFace(Color.BLUE,true);
+rotateFace(Color.ORANGE,true);
+rotateFace(Color.GREEN,true);
 
 let face = document.createElement('div');
 face.id = 'face'
