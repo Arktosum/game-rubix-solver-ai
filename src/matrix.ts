@@ -1,84 +1,153 @@
 export default class Matrix {
-    num_rows: number;
-    num_cols: number;
-    data: number[][];
-    constructor(num_rows: number, num_cols: number, randomize = true, fill = 0.0) {
-        this.num_rows = num_rows;
-        this.num_cols = num_cols;
-        this.data = Array.from({ length: this.num_rows }, () => Array(this.num_cols).fill(fill));
+    numRows: number; // Number of rows in the matrix
+    numCols: number; // Number of columns in the matrix
+    data: number[][]; // 2D array storing matrix elements
+
+    constructor(numRows: number, numCols: number, randomize = true, fill = 0.0) {
+        this.numRows = numRows;
+        this.numCols = numCols;
+        this.data = Array.from({ length: this.numRows }, () => Array(this.numCols).fill(fill));
         if (randomize) {
-            this.apply((x, i, j) => Math.random());
+            this.apply(() => Math.random());
         }
     }
+
+    // Print the shape and contents of the matrix
     print() {
-        console.log(`Shape : (${this.num_rows},${this.num_cols})`);
-        console.table(this.data)
+        console.log(`Shape: (${this.numRows}, ${this.numCols})`);
+        console.table(this.data);
     }
-    apply(callback: (x: number, row_index: number, col_index: number) => number) {
-        for (let i = 0; i < this.num_rows; i++) {
-            for (let j = 0; j < this.num_cols; j++) {
+
+    // Apply a callback function to each element in the matrix
+    apply(callback: (x: number, rowIndex: number, colIndex: number) => number) {
+        for (let i = 0; i < this.numRows; i++) {
+            for (let j = 0; j < this.numCols; j++) {
                 this.data[i][j] = callback(this.data[i][j], i, j);
             }
         }
     }
+
+    // Check if two matrices have the same shape
     static isSameShape(A: Matrix, B: Matrix) {
-        return (A.num_rows == B.num_rows) && (A.num_cols == B.num_cols)
+        return A.numRows === B.numRows && A.numCols === B.numCols;
     }
+
+    // Check if matrix A can be multiplied by matrix B
+    static isMultipliable(A: Matrix, B: Matrix) {
+        return A.numCols === B.numRows;
+    }
+
+    // Return a new matrix that is the element-wise sum of this and another matrix
     add(other: Matrix) {
-        /* Inplace operation  */
         if (!Matrix.isSameShape(this, other)) {
-            throw new Error('Invalid shapes for Matrix Addition!');
+            throw new Error('Invalid shapes for matrix addition');
         }
-        let new_matrix = new Matrix(this.num_rows, this.num_cols)
-        new_matrix.apply((x, i, j) => this.data[i][j] + other.data[i][j])
-        return new_matrix;
+        const result = new Matrix(this.numRows, this.numCols, false);
+        result.apply((_, i, j) => this.data[i][j] + other.data[i][j]);
+        return result;
     }
+
+    // Return a new matrix with a value added to each element
     addValue(value: number) {
-        let new_matrix = new Matrix(this.num_rows, this.num_cols)
-        new_matrix.apply((x, i, j) => this.data[i][j] + value);
-        return new_matrix;
+        const result = new Matrix(this.numRows, this.numCols, false);
+        result.apply((_, i, j) => this.data[i][j] + value);
+        return result;
     }
+
+    // Return a new matrix with each element multiplied by a value
     multiplyValue(value: number) {
-        /* Inplace operation  */
-        let new_matrix = new Matrix(this.num_rows, this.num_cols)
-        new_matrix.apply((x, i, j) => this.data[i][j] * value);
-        return new_matrix;
+        const result = new Matrix(this.numRows, this.numCols, false);
+        result.apply((_, i, j) => this.data[i][j] * value);
+        return result;
     }
+
+    // Return a new matrix with each element divided by a value
+    divideValue(value: number) {
+        if (value === 0) {
+            throw new Error('Division by zero is not allowed');
+        }
+        return this.multiplyValue(1 / value);
+    }
+
+    // Perform matrix multiplication with another matrix
     matmul(other: Matrix) {
         if (!Matrix.isMultipliable(this, other)) {
-            throw new Error('Invalid shapes for Matrix Multiplication!');
+            throw new Error('Invalid shapes for matrix multiplication');
         }
-        let new_matrix = new Matrix(this.num_rows, other.num_cols);
-        for (let i = 0; i < this.num_rows; i++) {
-            for (let j = 0; j < other.num_cols; j++) {
-                let SUM = 0;
-
-                for (let k = 0; k < this.num_cols; k++) {
-                    SUM += this.data[i][k] * other.data[k][j];
+        const result = new Matrix(this.numRows, other.numCols, false);
+        for (let i = 0; i < this.numRows; i++) {
+            for (let j = 0; j < other.numCols; j++) {
+                let sum = 0;
+                for (let k = 0; k < this.numCols; k++) {
+                    sum += this.data[i][k] * other.data[k][j];
                 }
-                new_matrix.data[i][j] = SUM;
+                result.data[i][j] = sum;
             }
         }
-        return new_matrix;
+        return result;
     }
-    static isMultipliable(A: Matrix, B: Matrix) {
-        return (A.num_cols = B.num_rows);
-    }
+
+    // Return a deep copy of the matrix
     copy() {
-        let clone_matrix = new Matrix(this.num_rows, this.num_cols);
-        clone_matrix.apply((x, i, j) => this.data[i][j]);
-        return clone_matrix;
+        const result = new Matrix(this.numRows, this.numCols, false);
+        result.data = this.data.map(row => row.slice());
+        return result;
     }
+
+    // Alias for copy method
+    clone() {
+        return this.copy();
+    }
+
+    // Return the transpose of the matrix
     transpose() {
-        let clone_matrix = new Matrix(this.num_cols, this.num_rows);
-        clone_matrix.apply((x, i, j) => this.data[j][i]);
-        return clone_matrix;
-    }
-    static fromArray(data: number[]) {
-        let new_matrix = new Matrix(data.length, 1, false, 0);
-        for (let i = 0; i < data.length; i++) {
-            new_matrix.data[i][0] = data[i];
+        const result = new Matrix(this.numCols, this.numRows, false);
+        for (let i = 0; i < this.numRows; i++) {
+            for (let j = 0; j < this.numCols; j++) {
+                result.data[j][i] = this.data[i][j];
+            }
         }
-        return new_matrix;
+        return result;
     }
-};
+
+    // Create a column vector from a 1D array
+    static fromArray(data: number[]) {
+        const result = new Matrix(data.length, 1, false);
+        for (let i = 0; i < data.length; i++) {
+            result.data[i][0] = data[i];
+        }
+        return result;
+    }
+
+    // Return the maximum value in the matrix
+    max() {
+        let maxVal = -Infinity;
+        for (const row of this.data) {
+            for (const val of row) {
+                if (val > maxVal) maxVal = val;
+            }
+        }
+        return maxVal;
+    }
+
+    // Return the sum of all elements in the matrix
+    sum() {
+        let total = 0;
+        for (const row of this.data) {
+            for (const val of row) {
+                total += val;
+            }
+        }
+        return total;
+    }
+
+    // Create a square identity matrix of given size, useful in linear algebra operations
+    static identity(size: number): Matrix {
+        const result = new Matrix(size, size, false);
+        for (let i = 0; i < size; i++) {
+            result.data[i][i] = 1;
+        }
+        return result;
+    }
+
+} 
