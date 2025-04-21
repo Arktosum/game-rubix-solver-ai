@@ -1,4 +1,6 @@
 
+import { Brain } from './genetic';
+import Matrix from './matrix';
 import './style.css'
 const root = document.querySelector('#root')!;
 
@@ -135,10 +137,7 @@ function rotateFace(face_color: Color, clockwise: boolean) {
 }
 
 
-rotateFace(Color.RED,true);
-rotateFace(Color.BLUE,true);
-rotateFace(Color.ORANGE,true);
-rotateFace(Color.GREEN,true);
+
 
 let face = document.createElement('div');
 face.id = 'face'
@@ -183,3 +182,7 @@ for (let j = 0; j < 9; j++) {
 row3.appendChild(face)
 
 
+const brain = new Brain();
+
+
+brain.forward(Matrix.fromArray([1, 2, 3, 4])).print();
