@@ -9,9 +9,12 @@ enum Color {
     YELLOW,
     RED
 }
-enum Direction {
+enum Rotation {
     CLOCKWISE,
     ANTICLOCKWISE,
+}
+
+enum Direction {
     TOP,
     BOTTOM,
     LEFT,
@@ -49,6 +52,14 @@ const ADJACENT_MAP: Record<Color, [Color, Direction][]> = {
     [Color.YELLOW]: [[Color.RED, Direction.BOTTOM], [Color.BLUE, Direction.BOTTOM], [Color.ORANGE, Direction.BOTTOM], [Color.GREEN, Direction.BOTTOM]],
     [Color.RED]: [[Color.WHITE, Direction.BOTTOM], [Color.BLUE, Direction.LEFT], [Color.YELLOW, Direction.TOP], [Color.GREEN, Direction.RIGHT]],
 }
+
+const DIRECTION_MAP = {
+    [Direction.TOP]: [0, 1, 2],
+    [Direction.RIGHT]: [2, 5, 8],
+    [Direction.BOTTOM]: [6, 7, 8],
+    [Direction.LEFT]: [0, 3, 6]
+}
+
 function createFace(cube: Record<Color, Color[]>, color: Color) {
     const face = document.createElement('div');
     face.classList.add('face');
@@ -100,38 +111,54 @@ function displayCube(cube: Record<Color, Color[]>) {
 }
 
 
-function swap(array: any[], i: number, j: number) {
-    let temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
+function swap(array1: any[], array2: any[], i: number, j: number) {
+    let temp = array1[i];
+    array1[i] = array2[j];
+    array2[j] = temp;
 }
 
-function makeMove(cube: Record<Color, Color[]>, faceColor: Color, direction: Direction) {
+function swap3(fromFace: Color[], toFace: Color[], fromIndices: number[], toIndices: number[]) {
+    swap(fromFace, toFace, fromIndices[0], toIndices[2]);
+    swap(fromFace, toFace, fromIndices[1], toIndices[1]);
+    swap(fromFace, toFace, fromIndices[2], toIndices[0]);
+}
+
+function makeMove(cube: Record<Color, Color[]>, faceColor: Color, rotation: Rotation) {
     let face = cube[faceColor];
+    // Rotate the face
     let swapOrder = [1, 2, 5, 8, 7, 6, 3];
-    if (direction == Direction.ANTICLOCKWISE) swapOrder.reverse();
+    if (rotation == Rotation.ANTICLOCKWISE) swapOrder.reverse();
     for (let i = 0; i < 2; i++) {
         for (let index of swapOrder) {
-            swap(face, 0, index);
+            swap(face, face, 0, index);
         }
     }
+
+    let adjacent_faces = ADJACENT_MAP[faceColor];
+
+    let [top_face_color, top_direction] = adjacent_faces[0];
+    let [left_face_color, left_direction] = adjacent_faces[1];
+    let [bottom_face_color, bottom_direction] = adjacent_faces[2];
+    let [right_face_color, right_direction] = adjacent_faces[3];
+
+    let top_indices = DIRECTION_MAP[top_direction];
+    let left_indices = DIRECTION_MAP[left_direction];
+    let bottom_indices = DIRECTION_MAP[bottom_direction];
+    let right_indices = DIRECTION_MAP[right_direction];
+
+    let top_face = cube[top_face_color];
+    let left_face = cube[left_face_color];
+    let bottom_face = cube[bottom_face_color];
+    let right_face = cube[right_face_color];
+
+    swap3(top_face, left_face, top_indices, left_indices)
 }
 
 let cube = createCube();
-cube[Color.WHITE][0] = Color.RED;
-cube[Color.WHITE][1] = Color.BLUE;
-cube[Color.WHITE][2] = Color.GREEN;
 
-cube[Color.WHITE][3] = Color.ORANGE;
-cube[Color.WHITE][4] = Color.WHITE;
-cube[Color.WHITE][5] = Color.YELLOW;
-
-cube[Color.WHITE][6] = Color.GREEN;
-cube[Color.WHITE][7] = Color.RED;
-cube[Color.WHITE][8] = Color.BLUE;
 
 displayCube(cube);
 
-makeMove(cube, Color.WHITE, Direction.CLOCKWISE);
+makeMove(cube, Color.WHITE, Rotation.CLOCKWISE);
 
 displayCube(cube);
