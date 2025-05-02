@@ -11,31 +11,9 @@
   place-content: center;
 }
 
-
-
-#face{
-  width:210px;
-  height:210px;
-  background-color: red;
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  
-}
-.cell{
-  background-color: green;
-  border : 1px solid black;
-  width : 70px;
-  height : 70px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-
 .white{
   background-color: white;
 }
-
 
 .yellow{
   background-color: yellow;
@@ -55,14 +33,16 @@
   background-color: green;
 }
 
-#row-1{
-  display: flex;
-  margin-left : 210px;
+.cell{
+  width: 100px;
+  height : 100px;
+  border : 1px solid black;
 }
-#row-2{
-  display: flex;
+
+.face{
+  display:  grid;
+  grid-template-columns: repeat(3,1fr);
 }
-#row-3{
+.flex{
   display: flex;
-  margin-left : 210px;
 }
